@@ -93,7 +93,7 @@ void main(List<String> arguments) async {
   // Check if ydotool is installed
   final whichResult = Process.runSync("which", ["ydotoold", "ydotool"]);
 
-  if (argResults["install-as-systemd"]!) {
+  if (argResults["install-as-daemon"]!) {
     print("Installing tool to /usr/local/bin and activating systemd service");
     // Prompt to download ydotool if not installed
     if (whichResult.exitCode != 0) {
