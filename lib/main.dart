@@ -10,42 +10,82 @@ const blue = '\x1B[34m';
 const red = '\x1B[31m';
 const reset = '\x1B[0m';
 
+const String systemdFile = """
+[Unit]
+Description=ydotool
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/penoval-usi702-eraser-fix
+
+[Install]
+WantedBy=multi-user.target
+""";
+
+Future<void> installYdotool(bool installToSystem) async {
+  print(
+      "${red}Error: ydotool or ydotoold not found in PATH or in pwd.${reset}");
+  print(
+      "${green}Attempt to download latest ydotool from https://github.com/nyxnor/ydotool ?${reset}");
+  if (installToSystem) {
+    print(
+        "${green}You may want to install ydotool directly to your system with your package manager "
+        "(apt, dnf, pacman, rpm-ostree, etc.)${reset}");
+  }
+  // print without newline
+  stdout.write("${blue}Press enter to continue or CTRL+C to cancel.${reset}");
+  stdin.readLineSync();
+
+  // Download latest ydotool from releases
+  var responseMain = await http.get(Uri.parse(
+      "https://github.com/ReimuNotMoe/ydotool/releases/latest/download/ydotool-release-ubuntu-latest"));
+  var responseDaemon = await http.get(Uri.parse(
+      "https://github.com/ReimuNotMoe/ydotool/releases/latest/download/ydotoold-release-ubuntu-latest"));
+  if (responseMain.statusCode == 200 && responseDaemon.statusCode == 200) {
+    await File(installToSystem ? "/usr/local/bin/ydotool" : "ydotool")
+        .writeAsBytes(responseMain.bodyBytes);
+    await File(installToSystem ? "/usr/local/bin/ydotoold" : "ydotoold")
+        .writeAsBytes(responseDaemon.bodyBytes);
+    print(
+        "Files downloaded to ${installToSystem ? "/usr/local/bin" : "current directory"}");
+  } else {
+    print("Failed to download main binary: ${responseMain.statusCode}");
+    print("Failed to download daemon binary: ${responseDaemon.statusCode}");
+  }
+  // allow execution
+  print("Setting executable permissions...");
+  await Process.run("chmod", ["+x", "ydotool"]);
+  await Process.run("chmod", ["+x", "ydotoold"]);
+}
+
 void main(List<String> arguments) async {
   final parser = ArgParser()
     ..addFlag("install-as-systemd",
         defaultsTo: false, help: "Install tool on your system");
 
+  // Check if ydotool is installed
+  final result = await Process.run('which', ["ydotoold", "ydotool"]);
+
   if (parser.parse(arguments)["install-as-systemd"]) {
     print("Installing tool to /usr/local/bin and activating systemd service");
+    // Prompt to download ydotool if not installed
+    if (result.exitCode != 0) {
+      await installYdotool(true);
+    }
+
+    // Copy dart binary to /usr/local/bin
+    await File("penoval-usi702-eraser-fix").copy("/usr/local/bin/penoval-usi702-eraser-fix");
+
+    // Create systemd file, enable and start service
+    await File("/etc/systemd/system/penoval-usi702-eraser-fix.service").writeAsString(systemdFile);
+    await Process.run("systemctl", ["daemon-reload"]);
+    await Process.run("systemctl", ["enable", "--now","penoval-usi702-eraser-fix.service"]);
   }
 
-  // Check if ydotool binaries are in pwd and prompt to download if not
-  if (!File("/usr/local/bin/ydotool").existsSync() || !File("/usr/local/bin/ydotoold").existsSync()) {
-    print(
-        "${red}Error: ydotool or ydotoold not found in /usr/local/bin.${reset}");
-    print(
-        "${green}Attempt to download latest ydotool from https://github.com/nyxnor/ydotool ?${reset}");
-    // print without newline
-    stdout.write("${blue}Press enter to continue or CTRL+C to cancel.${reset}");
-    stdin.readLineSync();
-
-    // Download latest ydotool from releases
-    var responseMain = await http.get(Uri.parse(
-        "https://github.com/ReimuNotMoe/ydotool/releases/latest/download/ydotool-release-ubuntu-latest"));
-    var responseDaemon = await http.get(Uri.parse(
-        "https://github.com/ReimuNotMoe/ydotool/releases/latest/download/ydotoold-release-ubuntu-latest"));
-    if (responseMain.statusCode == 200 && responseDaemon.statusCode == 200) {
-      await File("/usr/local/bin/ydotool").writeAsBytes(responseMain.bodyBytes);
-      await File("/usr/local/bin/ydotoold").writeAsBytes(responseDaemon.bodyBytes);
-      print("Files downloaded to current /usr/local/bin/");
-    } else {
-      print("Failed to download main binary: ${responseMain.statusCode}");
-      print("Failed to download daemon binary: ${responseDaemon.statusCode}");
-    }
-    // allow execution
-    print("Setting executable permissions...");
-    await Process.run("chmod", ["+x", "/usr/local/bin/ydotool"]);
-    await Process.run("chmod", ["+x", "/usr/local/bin/ydotoold"]);
+  // Fallback to pwd binaries
+  if (result.exitCode != 0 &&
+      (!File("ydotool").existsSync() || !File("ydotoold").existsSync())) {
+    await installYdotool(false);
   }
 
   // Determine which device to use by querying libinput's device list
@@ -137,7 +177,8 @@ void main(List<String> arguments) async {
         // Press ctrl+space
         print("${green}Enabling shortcut${reset}");
         enabledShortcut = true;
-        await Process.run("/usr/local/bin/ydotool", ["key", "29:1", "57:1", "57:0", "29:0"]);
+        await Process.run(
+            "/usr/local/bin/ydotool", ["key", "29:1", "57:1", "57:0", "29:0"]);
       }
     }
 
@@ -148,7 +189,8 @@ void main(List<String> arguments) async {
       // Press ctrl+space
       print("${green}Disabling shortcut${reset}");
       enabledShortcut = false;
-      await Process.run("/usr/local/bin/ydotool", ["key", "29:1", "57:1", "57:0", "29:0"]);
+      await Process.run(
+          "/usr/local/bin/ydotool", ["key", "29:1", "57:1", "57:0", "29:0"]);
     }
   });
 
