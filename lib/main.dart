@@ -60,16 +60,29 @@ Future<void> installYdotool(bool installToSystem) async {
 
 void main(List<String> arguments) async {
   final parser = ArgParser()
-    ..addFlag("install-as-systemd",
-        defaultsTo: false, help: "Install this tool via systemd")
+    ..addFlag("install-as-daemon",
+        defaultsTo: false, help: "Install this tool via systemd and make it run automatically")
     ..addFlag("skip-root-check",
-        defaultsTo: false, help: "Dont check if running as root");
+        defaultsTo: false, help: "Dont check if running as root")
+    ..addFlag("help",
+        abbr: "h", defaultsTo: false, help: "Print the help menu");
 
-  ArgResults argResults = parser.parse(arguments);
+  ArgResults? argResults;
+  try {
+    argResults = parser.parse(arguments);
+  } catch (e) {
+    print(parser.usage);
+    exit(1);
+  }
+
+  if (argResults["help"]!) {
+    print(parser.usage);
+    exit(0);
+  }
 
   // Check if running as root
   String userId = Process.runSync("id", ["-u"]).stdout.toString().trim();
-  if (userId != "0" && !argResults["skip-root-check"]) {
+  if (userId != "0" && !argResults["skip-root-check"]!) {
     print("${red}Non-root detected!${reset}");
     print(
         "${green}Please run this as root (e.g. sudo penoval-usi702-eraser-fix)${reset}");
@@ -80,7 +93,7 @@ void main(List<String> arguments) async {
   // Check if ydotool is installed
   final whichResult = Process.runSync("which", ["ydotoold", "ydotool"]);
 
-  if (argResults["install-as-systemd"]) {
+  if (argResults["install-as-systemd"]!) {
     print("Installing tool to /usr/local/bin and activating systemd service");
     // Prompt to download ydotool if not installed
     if (whichResult.exitCode != 0) {
@@ -111,7 +124,11 @@ void main(List<String> arguments) async {
   // Determine which device to use by querying libinput"s device list
   // Go through all devices and save all that have "tablet" capabilities
   List<Map<String, String>> tabletDevices = [];
-  for (String device in Process.runSync("libinput", ["list-devices"]).stdout.toString().trim().split("\n\n")) {
+  for (String device in Process.runSync("libinput", ["list-devices"])
+      .stdout
+      .toString()
+      .trim()
+      .split("\n\n")) {
     final List<String> attributes = device.split("\n");
     final String name = attributes.firstWhere(
         (line) => line.startsWith("Device:"),
