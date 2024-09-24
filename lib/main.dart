@@ -94,7 +94,7 @@ void main(List<String> arguments) async {
   final whichResult = Process.runSync("which", ["ydotoold", "ydotool"]);
 
   if (argResults["install-as-daemon"]!) {
-    print("Installing tool to /usr/local/bin and activating systemd service");
+    print("${blue}Installing tool to /usr/local/bin and activating systemd service${reset}");
     // Prompt to download ydotool if not installed
     if (whichResult.exitCode != 0) {
       await installYdotool(true);
