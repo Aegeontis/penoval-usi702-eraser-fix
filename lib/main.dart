@@ -2,13 +2,13 @@ import "dart:convert";
 import "dart:io";
 
 import "package:args/args.dart";
-import 'package:http/http.dart' as http;
+import "package:http/http.dart" as http;
 
 // ANSI colors
-const green = '\x1B[32m';
-const blue = '\x1B[34m';
-const red = '\x1B[31m';
-const reset = '\x1B[0m';
+const green = "\x1B[32m";
+const blue = "\x1B[34m";
+const red = "\x1B[31m";
+const reset = "\x1B[0m";
 
 const String systemdFile = """
 [Unit]
@@ -60,22 +60,25 @@ Future<void> installYdotool(bool installToSystem) async {
 
 void main(List<String> arguments) async {
   final parser = ArgParser()
-    ..addFlag("install-as-systemd", defaultsTo: false, help: "Install this tool via systemd")
-    ..addFlag("skip-root-check", defaultsTo: false, help: "Dont check if running as root");
+    ..addFlag("install-as-systemd",
+        defaultsTo: false, help: "Install this tool via systemd")
+    ..addFlag("skip-root-check",
+        defaultsTo: false, help: "Dont check if running as root");
 
   ArgResults argResults = parser.parse(arguments);
 
   // Check if running as root
   String userId = Process.runSync("id", ["-u"]).stdout.toString().trim();
-    if (userId != "0" && !argResults["skip-root-check"]) {
-      print("${red}Non-root detected!${reset}");
-      print("${green}Please run this as root (e.g. sudo penoval-usi702-eraser-fix)${reset}");
-      print("${blue}You can skip this check with --skip-root-check${reset}");
-      exit(1);
-    }
+  if (userId != "0" && !argResults["skip-root-check"]) {
+    print("${red}Non-root detected!${reset}");
+    print(
+        "${green}Please run this as root (e.g. sudo penoval-usi702-eraser-fix)${reset}");
+    print("${blue}You can skip this check with --skip-root-check${reset}");
+    exit(1);
+  }
 
   // Check if ydotool is installed
-  final result = await Process.run('which', ["ydotoold", "ydotool"]);
+  final result = await Process.run("which", ["ydotoold", "ydotool"]);
 
   if (argResults["install-as-systemd"]) {
     print("Installing tool to /usr/local/bin and activating systemd service");
@@ -85,12 +88,15 @@ void main(List<String> arguments) async {
     }
 
     // Copy dart binary to /usr/local/bin
-    await File("penoval-usi702-eraser-fix").copy("/usr/local/bin/penoval-usi702-eraser-fix");
+    await File("penoval-usi702-eraser-fix")
+        .copy("/usr/local/bin/penoval-usi702-eraser-fix");
 
     // Create systemd file, enable and start service
-    await File("/etc/systemd/system/penoval-usi702-eraser-fix.service").writeAsString(systemdFile);
+    await File("/etc/systemd/system/penoval-usi702-eraser-fix.service")
+        .writeAsString(systemdFile);
     await Process.run("systemctl", ["daemon-reload"]);
-    await Process.run("systemctl", ["enable", "--now","penoval-usi702-eraser-fix.service"]);
+    await Process.run(
+        "systemctl", ["enable", "--now", "penoval-usi702-eraser-fix.service"]);
   }
 
   // Fallback to pwd binaries
@@ -99,7 +105,7 @@ void main(List<String> arguments) async {
     await installYdotool(false);
   }
 
-  // Determine which device to use by querying libinput's device list
+  // Determine which device to use by querying libinput"s device list
   ProcessResult libinputResult =
       await Process.run("libinput", ["list-devices"]);
 
