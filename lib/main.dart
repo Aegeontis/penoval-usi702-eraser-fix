@@ -78,12 +78,12 @@ void main(List<String> arguments) async {
   }
 
   // Check if ydotool is installed
-  final result = await Process.run("which", ["ydotoold", "ydotool"]);
+  final whichResult = Process.runSync("which", ["ydotoold", "ydotool"]);
 
   if (argResults["install-as-systemd"]) {
     print("Installing tool to /usr/local/bin and activating systemd service");
     // Prompt to download ydotool if not installed
-    if (result.exitCode != 0) {
+    if (whichResult.exitCode != 0) {
       await installYdotool(true);
     }
 
@@ -106,12 +106,9 @@ void main(List<String> arguments) async {
   }
 
   // Determine which device to use by querying libinput"s device list
-  ProcessResult libinputResult =
-      await Process.run("libinput", ["list-devices"]);
-
   // Go through all devices and save all that have "tablet" capabilities
   List<Map<String, String>> tabletDevices = [];
-  for (String device in libinputResult.stdout.toString().trim().split("\n\n")) {
+  for (String device in Process.runSync("libinput", ["list-devices"]).stdout.toString().trim().split("\n\n")) {
     final List<String> attributes = device.split("\n");
     final String name = attributes.firstWhere(
         (line) => line.startsWith("Device:"),
