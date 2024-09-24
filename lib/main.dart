@@ -100,9 +100,12 @@ void main(List<String> arguments) async {
   }
 
   // Fallback to pwd binaries
-  if (result.exitCode != 0 &&
-      (!File("ydotool").existsSync() || !File("ydotoold").existsSync())) {
-    await installYdotool(false);
+  String ydotoolPath = "";
+  if (whichResult.exitCode != 0) {
+    if (!File("ydotool").existsSync() || !File("ydotoold").existsSync()) {
+      await installYdotool(false);
+    }
+    ydotoolPath = "./";
   }
 
   // Determine which device to use by querying libinput"s device list
@@ -164,7 +167,7 @@ void main(List<String> arguments) async {
   }
 
   // Start ydotoold process
-  Process ydotooldProcess = await Process.start("/usr/local/bin/ydotoold", []);
+  Process ydotooldProcess = await Process.start("${ydotoolPath}ydotoold", []);
   ydotooldProcess.exitCode.then((code) {
     print("${red}ydotoold exited with code $code. Stopping monitor...${reset}");
     exit(1);
@@ -192,7 +195,7 @@ void main(List<String> arguments) async {
         print("${green}Enabling shortcut${reset}");
         enabledShortcut = true;
         await Process.run(
-            "/usr/local/bin/ydotool", ["key", "29:1", "57:1", "57:0", "29:0"]);
+            "${ydotoolPath}ydotool", ["key", "29:1", "57:1", "57:0", "29:0"]);
       }
     }
 
@@ -204,7 +207,7 @@ void main(List<String> arguments) async {
       print("${green}Disabling shortcut${reset}");
       enabledShortcut = false;
       await Process.run(
-          "/usr/local/bin/ydotool", ["key", "29:1", "57:1", "57:0", "29:0"]);
+          "${ydotoolPath}ydotool", ["key", "29:1", "57:1", "57:0", "29:0"]);
     }
   });
 
