@@ -110,6 +110,8 @@ void main(List<String> arguments) async {
     await Process.run("systemctl", ["daemon-reload"]);
     await Process.run(
         "systemctl", ["enable", "--now", "penoval-usi702-eraser-fix.service"]);
+    print("${green} Installed successfully. The eraser tail should now work as expected.${reset}");
+    exit(1);
   }
 
   // Fallback to pwd binaries
