@@ -53,9 +53,9 @@ Future<void> installYdotool(bool installToSystem) async {
     print("Failed to download daemon binary: ${responseDaemon.statusCode}");
   }
   // allow execution
-  print("Setting executable permissions...");
-  await Process.run("chmod", ["755", "ydotool"]);
-  await Process.run("chmod", ["755", "ydotoold"]);
+  print("Setting 755 permissions...");
+  Process.runSync("chmod", ["755", installToSystem ? "/usr/local/bin/ydotool" : "ydotool"]);
+  Process.runSync("chmod", ["755", installToSystem ? "/usr/local/bin/ydotoold" : "ydotoold"]);
 }
 
 void main(List<String> arguments) async {
