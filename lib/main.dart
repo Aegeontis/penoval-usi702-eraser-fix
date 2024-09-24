@@ -24,7 +24,7 @@ WantedBy=multi-user.target
 
 Future<void> installYdotool(bool installToSystem) async {
   print(
-      "${red}Error: ydotool or ydotoold not found in PATH or in pwd.${reset}");
+      "${red}Error: ydotool or ydotoold not found in PATH ${installToSystem ? "" : "or in pwd"}.${reset}");
   print(
       "${green}Attempt to download latest ydotool from https://github.com/nyxnor/ydotool ?${reset}");
   if (installToSystem) {
