@@ -60,13 +60,24 @@ Future<void> installYdotool(bool installToSystem) async {
 
 void main(List<String> arguments) async {
   final parser = ArgParser()
-    ..addFlag("install-as-systemd",
-        defaultsTo: false, help: "Install tool on your system");
+    ..addFlag("install-as-systemd", defaultsTo: false, help: "Install this tool via systemd")
+    ..addFlag("skip-root-check", defaultsTo: false, help: "Dont check if running as root");
+
+  ArgResults argResults = parser.parse(arguments);
+
+  // Check if running as root
+  String userId = Process.runSync("id", ["-u"]).stdout.toString().trim();
+    if (userId != "0" && !argResults["skip-root-check"]) {
+      print("${red}Non-root detected!${reset}");
+      print("${green}Please run this as root (e.g. sudo penoval-usi702-eraser-fix)${reset}");
+      print("${blue}You can skip this check with --skip-root-check${reset}");
+      exit(1);
+    }
 
   // Check if ydotool is installed
   final result = await Process.run('which', ["ydotoold", "ydotool"]);
 
-  if (parser.parse(arguments)["install-as-systemd"]) {
+  if (argResults["install-as-systemd"]) {
     print("Installing tool to /usr/local/bin and activating systemd service");
     // Prompt to download ydotool if not installed
     if (result.exitCode != 0) {
