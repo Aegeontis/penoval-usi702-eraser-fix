@@ -54,8 +54,8 @@ Future<void> installYdotool(bool installToSystem) async {
   }
   // allow execution
   print("Setting executable permissions...");
-  await Process.run("chmod", ["+x", "ydotool"]);
-  await Process.run("chmod", ["+x", "ydotoold"]);
+  await Process.run("chmod", ["755", "ydotool"]);
+  await Process.run("chmod", ["755", "ydotoold"]);
 }
 
 void main(List<String> arguments) async {
