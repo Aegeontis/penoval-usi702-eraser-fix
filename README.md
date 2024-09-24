@@ -9,7 +9,7 @@ the [latest binary from releases](https://github.com/Aegeontis/penoval-usi702-er
 2. Unzip the file: `unzip penoval-usi702-eraser-fix.zip`
 3. Run the binary as root: `sudo ./penoval-usi702-eraser-fix/penoval-usi702-eraser-fix`
 4. (Optional): Install the binary as a systemd service by running:
-   `sudo ./penoval-usi702-eraser-fix/penoval-usi702-eraser-fix --install-as-systemd`
+   `sudo ./penoval-usi702-eraser-fix/penoval-usi702-eraser-fix --install-as-daemon`
 
 ## How this works:
 
