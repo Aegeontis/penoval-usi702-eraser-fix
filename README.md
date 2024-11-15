@@ -24,4 +24,4 @@ an issue if you need something else).
 1. Download and install the [dartsdk](https://dart.dev/get-dart)
 2. Clone the repository: `git clone --depth=1 https://github.com/Aegeontis/penoval-usi702-eraser-fix`
 3. Change directory: `cd penoval-usi702-eraser-fix`
-4. Build the project: `pub get && dart compile exe lib/main.dart -o penoval-usi702-eraser-fix`
+4. Build the project: `dart pub get && dart compile exe lib/main.dart -o penoval-usi702-eraser-fix`
